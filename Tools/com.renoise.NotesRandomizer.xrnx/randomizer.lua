@@ -119,6 +119,12 @@ function Random:set_preserve_octave(preserve_octave)
   self.preserve_octave = preserve_octave
 end
 
+function Random:set_start_on_tonic(start_on_tonic)
+  assert(type(start_on_tonic) == 'boolean')
+  self.start_on_tonic = start_on_tonic
+  self.started_on_tonic = false
+end
+
 function Random:set_neighbour(neighbour, shift)
   assert(type(neighbour) == 'boolean')
   self.neighbour = neighbour
@@ -168,6 +174,11 @@ function Random:randomize(note)
   if self.max then max = self.max end
   if type(number) == 'nil' then
     number = math.random(min, max)
+  end
+
+  if self.start_on_tonic and not self.started_on_tonic then
+    prefix = self.key
+    self.started_on_tonic = true
   end
 
   return (prefix .. number)
@@ -290,41 +301,34 @@ function Iterator:set_callback(callback_function)
 end
 
 function Iterator:go(iter)
-  if (type(iter) == "table") then
-    for pos,line in ipairs(iter) do self:_do(pos,line) end
-  else
-    for pos,line in iter do self:_do(pos,line) end
-  end
-end
-
-function Iterator:_do(pos,line)
-  if
-  (
-    not self.ignore_muted or
-    self.ignore_muted and renoise.song().tracks[pos.track].mute_state ==
-    renoise.Track.MUTE_STATE_ACTIVE
-  )
-  and
-    not line.is_empty
-  then
-    for _,note_col in ipairs(line.note_columns) do
-      if
-      (
-        not self.constrain_to_selected or
-        self.constrain_to_selected and note_col.is_selected
-      )
-      and
-      (
-        not note_col.is_empty and
-        note_col.note_value ~= renoise.PatternTrackLine.NOTE_OFF and
-        note_col.note_value ~= renoise.PatternTrackLine.EMPTY_NOTE
-      )
-      then
-        note_col.note_string = self.callback(note_col.note_string)
+  for pos,line in iter do
+    if
+    (
+      not self.ignore_muted or
+      self.ignore_muted and renoise.song().tracks[pos.track].mute_state ==
+      renoise.Track.MUTE_STATE_ACTIVE
+    )
+    and
+      not line.is_empty
+    then
+      for _,note_col in ipairs(line.note_columns) do
+        if
+        (
+          not self.constrain_to_selected or
+          self.constrain_to_selected and note_col.is_selected
+        )
+        and
+        (
+          not note_col.is_empty and
+          note_col.note_value ~= renoise.PatternTrackLine.NOTE_OFF and
+          note_col.note_value ~= renoise.PatternTrackLine.EMPTY_NOTE
+        )
+        then
+          note_col.note_string = self.callback(note_col.note_string)
+        end
       end
     end
   end
-
 end
 
 
@@ -336,7 +340,7 @@ end
 
 function invoke_random(
   mode, pattern_iterator, constrain, ignore_muted, key, preserve_notes, 
-  preserve_octave, neighbour, shift, min, max
+  preserve_octave, start_on_tonic, neighbour, shift, min, max
 )
 
   if (preserve_octave == nil) then
@@ -347,6 +351,7 @@ function invoke_random(
   local randomizer = Random(mode)
   if key then randomizer:set_key(key) end
   if preserve_octave then randomizer:set_preserve_octave(preserve_octave) end
+  if start_on_tonic then randomizer:set_start_on_tonic(start_on_tonic) end
   if preserve_notes then randomizer:set_preserve_notes(preserve_notes) end
   if neighbour then randomizer:set_neighbour(neighbour, shift) end
   if min and max then randomizer:set_range(min, max) end

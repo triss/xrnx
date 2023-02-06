@@ -10,7 +10,6 @@ randomize_modes:insert(1, "Shuffle")
 
 -- available iterator ranges
 range_modes = table.create {
-  "Selected Phrase",
   "Whole Song",
   "Whole Pattern",
   "Track in Song",
@@ -32,6 +31,7 @@ local current_key = "C-"
 local current_ignore_muted = false
 local current_preserve_notes = false
 local current_preserve_octaves = true
+local current_start_on_tonic = false
 local current_neighbour = false
 local current_neighbour_shift = "Rand"
 local current_min = 0
@@ -76,15 +76,6 @@ local function invoke_current_random()
     iter = renoise.song().pattern_iterator:lines_in_pattern(
       renoise.song().selected_pattern_index)
 
-  elseif (range == "Selected Phrase") then
-    if renoise.song().selected_phrase == nil then
-      return -- Do nothing
-    else
-      current_ignore_muted = false -- Override
-      iter = renoise.song().selected_phrase:lines_in_range(
-        1, renoise.song().selected_phrase.number_of_lines)
-     end
-
   else
     error("Unknown range mode")
   end
@@ -97,7 +88,7 @@ local function invoke_current_random()
     end
     randomizer.invoke_random(
       mode, iter, selection_only, current_ignore_muted, current_key, current_preserve_notes,
-      current_preserve_octaves, current_neighbour, current_neighbour_shift,
+      current_preserve_octaves, current_start_on_tonic, current_neighbour, current_neighbour_shift,
       current_min, current_max
     )
   end
@@ -133,6 +124,11 @@ local function redraw(vb)
   vb.views.preserve_octave_row_2.visible =
     (current_mode ~= randomize_modes:find("Shuffle") and
      current_preserve_octaves == false)
+  -- start on tonic
+  vb.views.start_on_tonic_row.visible =
+    (current_mode ~= randomize_modes:find("Shuffle") and
+    current_mode ~= randomize_modes:find("Chaos") and
+    current_mode ~= randomize_modes:find("Custom"))
 end
 
 
@@ -272,6 +268,14 @@ function show_randomize_gui()
     end
   }
 
+  local start_on_tonic_switch = vb:checkbox {
+    value = current_start_on_tonic,
+    notifier = function(value)
+      current_start_on_tonic = value
+      redraw(vb)
+    end
+  }
+
   local octaves = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
   local octave_selector = vb:row {
     width = POPUP_WIDTH,
@@ -390,6 +394,12 @@ function show_randomize_gui()
       id = "preserve_octave_row_2",
       mode = "center",
       octave_selector,
+    },
+
+    vb:row {
+      id = "start_on_tonic_row",
+      start_on_tonic_switch,
+      vb:text { text = 'Start on Tonic' }
     },
 
     vb:row {
