@@ -21,16 +21,6 @@ end
 -- keybinding registration
 --------------------------------------------------------------------------------
 
--- Selected Phrase
-renoise.tool():add_keybinding {
-  name = "Phrase Editor:Phrase Operations:Randomize Notes",
-  invoke = function(repeated)
-    if (not repeated) then
-      gui.invoke_random_in_range("Selected Phrase")
-    end
-  end
-}
-
 -- Whole pattern
 renoise.tool():add_keybinding {
   name = "Pattern Editor:Pattern Operations:Randomize Notes",

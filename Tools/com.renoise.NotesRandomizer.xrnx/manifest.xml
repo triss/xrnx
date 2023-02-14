@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RenoiseScriptingTool doc_version="0">
-  <ApiVersion>5</ApiVersion>
+  <ApiVersion>6</ApiVersion>
+  <AutoUpgraded>true</AutoUpgraded>
   <Id>com.renoise.NotesRandomizer</Id>
-  <Version>1.11</Version>
+  <Version>1.01</Version>
   <Author>Dac Chartrand [dac@renoise.com]</Author>
   <Name>Randomize Notes</Name>
   <Category>Pattern Editor</Category>

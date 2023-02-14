@@ -4,6 +4,9 @@ randomizer.lua
 
 module("randomizer", package.seeall)
 
+_clibroot = 'cLib/classes/'
+_xlibroot = 'xLib/classes/'
+require (_xlibroot..'xScale')
 
 --------------------------------------------------------------------------------
 -- Random Class
@@ -16,24 +19,28 @@ class "Random"
 -- Do not change "Custom", pass a Lua table to set_mode() instead
 Random.modes = {
   { name = 'Chaos', notes = {'C-','C#','D-','D#','E-','F-','F#','G-','G#','A-','A#','B-'} },
-  { name = 'Algerian', notes = {'C-','D-','E-','F-','F#','G-','A-','B-'} },
-  { name = 'Augmented', notes = {'C-','D-','E-','F#','G#','B-'} },
-  { name = 'Auxiliary Augmented', notes = {'D-','E-','F#','G#','A#','B#'} },
-  { name = 'Auxiliary Diminished Blues', notes = {'C#','D-','E-','E#','G-','G#','A#','B-'} },
-  { name = 'Auxiliary Diminished', notes = {'D-','E-','F-','G-','G#','A-','A#', 'B-', 'C#'} },
-  { name = 'Balinese', notes = {'C-','D-','B-','G-','A-'} },
-  { name = 'Blues', notes = {'C-','E-','F-','F#','G-','B-'} },
-  { name = 'Harmonic Minor', notes = {'C-','D-','D#','F-','G-','G#'} },
-  { name = 'Hirajoshi', notes = {'C#','D#','E-','G#','A-'} },
-  { name = 'Locrian', notes = {'C-','C#','D#','F-','F#','G#','A#','C-'} },
-  { name = 'Lydian', notes = {'C-','D-','E-','F#','G-','A-','B-'} },
-  { name = 'Melodic minor', notes = {'C-', 'D-', 'D#', 'F-', 'G-', 'A-', 'B-'} },
-  { name = 'Pentatonic Blues', notes = {'C-','D#','F-','F#','G-'} },
-  { name = 'Pentatonic Major', notes = {'C-','D-','F-','G-','A-'} },
-  { name = 'Pentatonic Minor', notes = {'C-','D#','F-','G-','A#'} },
-  { name = 'Pentatonic Neutral', notes = {'C-','D-','F-','G-','A#'} },
   { name = 'Custom', notes = { } },
 }
+
+local notes = {'C-','C#','D-','D#','E-','F-','F#','G-','G#','A-','A#','B-'}
+
+-- Converts xScales from xLib to Note Randomizer mode
+local function convert_scale(scale)
+  -- create a notes table from the xScale's keys table
+  scale.notes = table.create()
+  for i=1,#scale.keys do
+    if scale.keys[i] == 1 then
+      scale.notes:insert(notes[i])
+    end
+  end
+end
+
+-- Add all the scales from the xLib library to our Tool
+local scales = table.copy(xScale.SCALES)
+table.remove(scales, 1)
+for _,scale in pairs(xScale.SCALES) do
+  table.insert(Random.modes, create_mode(scale))
+end
 
 -- Populate mode_names table with integers for keys (used for sorting)
 Random.mode_names = {}
