@@ -33,13 +33,14 @@ local function convert_scale(scale)
       scale.notes:insert(notes[i])
     end
   end
+  return scale
 end
 
 -- Add all the scales from the xLib library to our Tool
 local scales = table.copy(xScale.SCALES)
 table.remove(scales, 1)
 for _,scale in pairs(xScale.SCALES) do
-  table.insert(Random.modes, create_mode(scale))
+  table.insert(Random.modes, convert_scale(scale))
 end
 
 -- Populate mode_names table with integers for keys (used for sorting)
